@@ -2,26 +2,7 @@ var datetime = require('date-and-time');
 
 var config = require('./config.js');
 var wrongParams = require('./responses.js').wrongParams;
-
-/*
-var logMessages = function(messages) {
-  messages.forEach(function(msg) {
-    var str = 'SMS -';
-    str += ' ID:'+msg.message_id;
-    str += ' TO:'+msg.to;
-    str += ' MSG:"'+msg.message+'"';
-    if (msg.date) str += ' DATE:'+msg.date.toUTCString();
-    if (msg.highpriority) str += ' PRIORITY';
-    if (msg.unicode) str += ' UNICODE';
-    if (msg.flash) str += ' FLASH';
-    if (msg.oid) str += ' OID:"'+msg.oid+'"'
-    if (msg.modem_no) str += ' MODEMNO:'+msg.modem_no;
-    console.log(str);
-  })
-}
-*/
-
-var msgID = 0; // TODO: Move to state
+var mailbox = require('./mailbox.js');
 
 // SendSms method
 module.exports = function(params) {
@@ -37,7 +18,7 @@ module.exports = function(params) {
   // Parse date (optional)
   var date;
   if (params.date) {
-    date = datetime.parse(params.date,'YYYYMMDDHHmm',true);
+    date = datetime.parse(params.date,'YYYYMMDDHHmm',false);
     if (!date) return wrongParams;
   }
   // Check priority (optional)
@@ -70,33 +51,32 @@ module.exports = function(params) {
   // Check modem number (optional)
   var modem_no;
   if (params.modem_no) {
-    if (params.modem_no == '0') modem_no = 0;
-    else if (params.modem_no == '1') modem_no = 1;
+    if (params.modem_no == '1') modem_no = 1;
+    else if (params.modem_no == '2') modem_no = 2;
     else return wrongParams;
   }
 
   // Successfull message(s)
   var msgs = [];
   phonesArr.forEach(function(to) {
-    // TODO: Push message to outbox
+    var msgID = mailbox.putInOutbox({
+      to: to,
+      from: modem_no == 2 ? config.smseagle2 : config.smseagle1,
+      message: params.message,
+      date: date,
+      oid: oid
+    });
     msgs.push({
-      message_id: msgID++,
+      message_id: msgID,
       status: 'ok'
     });
   });
 
-  if (params.responsetype == 'xml') {
-    // It doesn't seem like it sends all the messages when using XML
-    return {
-      extended: {
-        message_id: (msgID-1),
-        status: 'ok'
-      }
-    }
-  } else {
-    return {
-      simple: 'OK; ID='+(msgID-1),
-      extended: msgs
-    }
+  var lastMsg = msgs[msgs.length-1];
+  return {
+    text: 'OK; ID='+lastMsg.message_id,
+    xml: lastMsg,
+    simple: 'OK; ID='+lastMsg.message_id,
+    extended: msgs.length > 1 ? msgs : lastMsg
   }
 }

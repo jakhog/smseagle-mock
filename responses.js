@@ -1,4 +1,9 @@
 exports.wrongAuth = {
+  text: 'Invalid login or password',
+  xml: {
+    status: 'error',
+    error_text: 'Invalid login or password'
+  },
   simple: 'Invalid login or password',
   extended: {
     status: 'error',
@@ -8,6 +13,11 @@ exports.wrongAuth = {
 };
 
 exports.wrongParams = {
+  text: 'Wrong parameters',
+  xml: {
+    status: 'error',
+    error_text: 'Wrong parameters'
+  },
   simple: 'Wrong parameters',
   extended: {
     status: 'error',

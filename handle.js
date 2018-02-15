@@ -56,11 +56,11 @@ var sendResponse = function(result, params, res, jsonrpc) {
       // Generate XML
       var lines = [];
       lines.push('<xml>');
-      generateXML(lines, result.extended);
+      generateXML(lines, result.xml);
       lines.push('</xml>');
       res.send(lines.join('\n'));
     } else {
-      res.send(result.simple);
+      res.send(result.text);
     }
   }
 };
