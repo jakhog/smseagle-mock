@@ -5,20 +5,26 @@ var responses = require('./responses.js');
 var genericChecks = function(params, jsonrpc) {
   // Check that we actually got params
   if (!params)
-    return responses.wrongParams;
-  // Check the authentication
-  if (params.login != config.login || params.pass != config.pass)
-    return responses.wrongAuth;
-  // Check the response type (optional)
+    return responses.wrongParams({});
+  // Make sure we have a response type (it's optional)
   if (params.responsetype) {
     if (jsonrpc) {
       if (params.responsetype != 'simple' && params.responsetype != 'extended')
-        return responses.wrongParams;
+        return responses.wrongParams(params);
     } else {
       if (params.responsetype != 'text' && params.responsetype != 'xml')
-        return responses.wrongParams;
+        return responses.wrongParams(params);
+    }
+  } else {
+    if (jsonrpc) {
+      params.responsetype = 'simple';
+    } else {
+      params.responsetype = 'text';
     }
   }
+  // Check the authentication
+  if (params.login != config.login || params.pass != config.pass)
+    return responses.wrongAuth;
   // Request looks OK so far
   return null;
 };
@@ -27,12 +33,14 @@ var generateXML = function(lines, obj) {
   if (Array.isArray(obj)) {
     for (var i = 0; i < obj.length; i++) {
       generateXML(lines, {
-        item: array[i]
+        item: obj[i]
       });
     }
   } else {
     for (var key in obj) {
-      if (typeof obj[key] == 'object') {
+      if (obj[key] == undefined || obj[key] == null) {
+        lines.push('<'+key+'/>');
+      } else if (typeof obj[key] == 'object') {
         lines.push('<'+key+'>');
         generateXML(lines, obj[key]);
         lines.push('</'+key+'>');
@@ -46,21 +54,17 @@ var generateXML = function(lines, obj) {
 var sendResponse = function(result, params, res, jsonrpc) {
   res.status(result.code || 200);
   if (jsonrpc) {
-    if (params.responsetype == 'extended') {
-      res.send({result: result.extended});
-    } else {
-      res.send({result: result.simple});
-    }
+    res.send({result: result.response});
   } else {
     if (params.responsetype == 'xml') {
       // Generate XML
       var lines = [];
       lines.push('<xml>');
-      generateXML(lines, result.xml);
+      generateXML(lines, result.response);
       lines.push('</xml>');
       res.send(lines.join('\n'));
     } else {
-      res.send(result.text);
+      res.send(result.response);
     }
   }
 };

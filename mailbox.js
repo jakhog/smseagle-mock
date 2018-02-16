@@ -73,8 +73,8 @@ var updateInDB = function(id, msg) {
     dbmsg.StatusError = msg.StatusError || dbmsg.StatusError;
     dbmsg.RecipientID = msg.RecipientID || dbmsg.RecipientID;
     dbmsg.id_folder = msg.id_folder || dbmsg.id_folder;
-    dbmsg.readed = msg.readed || dbmsg.readed;
-    dbmsg.oid = msg.oid || dbmsg.oid;
+    dbmsg.readed = msg.readed != undefined ? msg.readed : dbmsg.readed;
+    dbmsg.oid = msg.oid != undefined ? msg.oid : dbmsg.oid;
     // Set some calculated values
     dbmsg.Text = calculateText(dbmsg.TextDecoded);
     dbmsg.UpdatedInDB = new Date();
@@ -88,7 +88,7 @@ var updateInDB = function(id, msg) {
 var insertIntoDB = function(msg) {
   var id = msgID++;
   DB[id] = {
-    InsertedIntoDB: new Date()
+    InsertIntoDB: new Date()
   };
   updateInDB(id, msg);
   return id;
@@ -171,9 +171,12 @@ exports.readSMS = function(selector) {
       if (msg.id_folder != selector.id_folder) continue;
       if (msg.ID < selector.idfrom) continue;
       if (msg.SendingDateTime < selector.datefrom) continue;
-      if (msg.SendingDateTime > selector.datefrom) continue;
+      if (msg.SendingDateTime > selector.dateto) continue;
       if (selector.id_folder == folders.inbox) {
         if (selector.unread && msg.readed) continue;
+        if (selector.from && selector.from != msg.from) continue;
+      } else {
+        if (selector.to && selector.to != msg.to) continue;
       }
       // Should return this message
       msgs.push(msg);
@@ -199,9 +202,6 @@ exports.getFolderLength = function(folder) {
 }
 
 exports.init = function() {
-  var forwadedMsgs = {};
-  var forwardTries = {};
-
   setInterval(function() {
     var now = new Date();
     // Loop through messages
@@ -218,19 +218,23 @@ exports.init = function() {
         }
       } else if (msg.id_folder == folders.inbox) {
         // Forward inbox messages using callback
-        if (!(id in forwadedMsgs)) {
-          if (id in forwardTries) {
-            // We have tried recently (should wait 2 minutes)
-            var sinceLast = now-forwardTries[id];
-            if (sinceLast < 2*60*1000) continue;
-          }
-          if (callbackMsg(msg)) {
-            forwadedMsgs[id] = true;
-            delete forwardTries[id];
-            log.logForwardedMessage(msg);
-          } else {
-            forwardTries[id] = now;
-          }
+        if (msg._forwarded) continue;
+
+        // We should only try for 24h
+        var sinceReceived = now-msg.SendingDateTime;
+        if (sinceReceived > 24*60*60*1000) continue;
+        // We should only try every two minutes
+        if (msg._forwardTry) {
+          var sinceLast = now-msg._forwardTry;
+          if (sinceLast < 2*60*1000) continue;
+        }
+
+        // Try now
+        msg._forwarded = false;
+        msg._forwardTry = now;
+        if (callbackMsg(msg)) {
+          msg._forwarded = true;
+          log.logForwardedMessage(msg);
         }
       }
     }

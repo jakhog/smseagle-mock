@@ -1,27 +1,25 @@
-exports.wrongAuth = {
-  text: 'Invalid login or password',
-  xml: {
-    status: 'error',
-    error_text: 'Invalid login or password'
-  },
-  simple: 'Invalid login or password',
-  extended: {
-    status: 'error',
-    error_text: 'Invalid login or password'
-  },
-  code: 401
+exports.wrongAuth = function(params) {
+  var result = { code: 401 };
+  if (params.responsetype == 'extended' || params.responsetype == 'xml') {
+    result.response = {
+      status: 'error',
+      error_text: 'Invalid login or password'
+    };
+  } else {
+    result.response = 'Invalid login or password';
+  }
+  return result;
 };
 
-exports.wrongParams = {
-  text: 'Wrong parameters',
-  xml: {
-    status: 'error',
-    error_text: 'Wrong parameters'
-  },
-  simple: 'Wrong parameters',
-  extended: {
-    status: 'error',
-    error_text: 'Wrong parameters'
-  },
-  code: 400
+exports.wrongParams = function(params) {
+  var result = { code: 400 };
+  if (params.responsetype == 'extended' || params.responsetype == 'xml') {
+    result.response = {
+      status: 'error',
+      error_text: 'Wrong parameters'
+    };
+  } else {
+    result.response = 'Wrong parameters';
+  }
+  return result;
 };
