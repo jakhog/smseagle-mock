@@ -43,7 +43,13 @@ exports.logSentMessage = function(msg) {
 };
 
 exports.logForwardedMessage = function(msg) {
-
+  var str = 'FWD=';
+  str += msg.SendingDateTime;
+  str += ' FROM:'+msg.SenderNumber;
+  str += ' TO:'+msg.DestinationNumber;
+  str += ' MESSAGE:"'+msg.TextDecoded+'"'
+  str += ' OID:'+msg.oid;
+  console.log(str);
 }
 
 exports.error = function(msg) {

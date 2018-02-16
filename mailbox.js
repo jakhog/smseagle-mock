@@ -1,3 +1,9 @@
+var http = require('http');
+var https = require('https');
+var url = require('url');
+var querystring = require('querystring');
+var datetime = require('date-and-time');
+
 var config = require('./config.js');
 var io = require('./io.js');
 
@@ -94,9 +100,59 @@ var insertIntoDB = function(msg) {
   return id;
 }
 
-var callbackMsg = function(msg) {
-  console.log('Trying callback', msg);
-  return false;
+// Create an HTTPS agent to handle potential self-signed certificates
+var httpsAgent = new https.Agent({
+  rejectUnauthorized: !config.selfsigned
+});
+/* ----- Callback function ----- */
+var callbackMsg = function(msg, callback) {
+  var fwdMsg = {
+    sender: msg.SenderNumber,
+    timestamp: datetime.format(msg.SendingDateTime, 'YYYYMMDDHHmmss', false),
+    text: msg.TextDecoded,
+    msgid: msg.ID,
+    modemno: msg.RecipientID,
+    oid: msg.oid
+  };
+  if (config.apikey) fwdMsg.apikey = config.apikey;
+  var query = querystring.stringify(fwdMsg);
+
+  var purl = new url.URL(config.callbackurl);
+  var path = purl.pathname;
+  if (config.callbackmethod != 'POST') {
+    path += '?'+query;
+  }
+
+  var requestOpts = {
+    protocol: purl.protocol,
+    hostname: purl.hostname,
+    port: purl.port,
+    path: path,
+    method: config.callbackmethod == 'POST' ? 'POST' : 'GET'
+  };
+  var request;
+  var responseCb = function(response) {
+    callback(response.statusCode == 200);
+  };
+  if (purl.protocol == 'https:') {
+    requestOpts.agent = httpsAgent;
+    request = https.request(requestOpts, responseCb);
+  } else {
+    request = http.request(requestOpts, responseCb);
+  }
+
+  request.on('error', function(error) {
+    io.error('Callback error '+error);
+    callback(false);
+  });
+  request.setTimeout(30*1000, function() {
+    request.abort();
+  });
+
+  if (config.callbackmethod == 'POST') {
+    request.write(query);
+  }
+  request.end();
 }
 
 /* ---------- Exposed functions ---------- */
@@ -113,6 +169,8 @@ exports.putInInbox = function(msg) {
   if (config.smseagle1 != msg.to && config.smseagle2 != msg.to)
     return undefined;
   var smseagleID = config.smseagle1 == msg.to ? 'smseagle1' : 'smseagle2';
+
+  // TODO: Find OID of last message sent to this number
 
   return insertIntoDB({
     SendingDateTime: new Date(),
@@ -232,10 +290,12 @@ exports.init = function() {
         // Try now
         msg._forwarded = false;
         msg._forwardTry = now;
-        if (callbackMsg(msg)) {
-          msg._forwarded = true;
-          log.logForwardedMessage(msg);
-        }
+        callbackMsg(msg, function(success) {
+          if (success) {
+            msg._forwarded = true;
+            io.logForwardedMessage(msg);
+          }
+        })
       }
     }
   }, 5000);

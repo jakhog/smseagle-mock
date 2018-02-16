@@ -4,8 +4,8 @@
   "description": "A node.js server mocking the REST API of an SMSeagle",
   "main": "main.js",
   "dependencies": {
-    "express": "^4.16.2",
-    "date-and-time": "^0.6.2"
+    "date-and-time": "^0.6.2",
+    "express": "^4.16.2"
   },
   "author": "Jakob Høgenes",
   "license": "MIT"
