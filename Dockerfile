@@ -1,0 +1,22 @@
+FROM golang:1.8 as build
+
+# Clone and install FRP
+RUN git clone --branch v0.16.0 --depth 1 https://github.com/fatedier/frp.git /go/src/github.com/fatedier/frp
+ENV CGO_ENABLED=0
+RUN cd /go/src/github.com/fatedier/frp && make frpc
+
+# Since we have git in goland, also clone smseagle-mock from here
+RUN git clone --depth 1 https://github.com/jakhog/smseagle-mock.git /root/smseagle-mock/
+
+FROM node:9.5.0-alpine
+# Copy the smseagle-mock
+COPY --from=build /root/smseagle-mock/ /root/smseagle-mock/
+# Copy the built FRP client
+COPY --from=build /go/src/github.com/fatedier/frp/bin/frpc /root/smseagle-mock/
+
+# Install node dependencies
+RUN cd /root/smseagle-mock/srv && npm install
+
+WORKDIR /root/smseagle-mock/
+ENTRYPOINT ["node", "main.js"]
+CMD ["srv.ini", "frpc.ini"]
