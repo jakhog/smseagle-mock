@@ -5,7 +5,8 @@
   "main": "main.js",
   "dependencies": {
     "date-and-time": "^0.6.2",
-    "express": "^4.16.2"
+    "express": "^4.16.2",
+    "ini": "^1.3.5"
   },
   "author": "Jakob Høgenes",
   "license": "MIT"
