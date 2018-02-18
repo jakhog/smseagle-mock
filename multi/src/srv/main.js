@@ -24,6 +24,7 @@ var store = redux.createStore(
 
 /* ----- Normal HTTP app ----- */
 var app = express();
+app.use(express.static('./build/'));
 
 var handleCommand = function(command, params) {
   switch (command) {

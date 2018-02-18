@@ -5,7 +5,7 @@ RUN git clone --branch v0.16.0 --depth 1 https://github.com/fatedier/frp.git /go
 ENV CGO_ENABLED=0
 RUN cd /go/src/github.com/fatedier/frp && make frpc
 
-# Since we have git in goland, also clone smseagle-mock from here
+# Since we have git in golang, also clone smseagle-mock from here
 RUN git clone --depth 1 https://github.com/jakhog/smseagle-mock.git /root/smseagle-mock/
 
 FROM node:9.5.0-alpine
