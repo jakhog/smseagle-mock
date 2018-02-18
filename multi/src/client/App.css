@@ -1,0 +1,15 @@
+div.App {
+  height: 100%;
+}
+
+div.error {
+  height: 100%;
+  width: 100%;
+  display: table;
+  text-align: center;
+}
+
+div.error .message {
+  display: table-cell;
+  vertical-align: middle;
+}

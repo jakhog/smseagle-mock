@@ -1,0 +1,27 @@
+div.no-selected {
+  display: table;
+  text-align: center;
+  min-height: 60%;
+  width: 100%;
+}
+
+div.no-selected > .message {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+div.display {
+  padding: 16px 24px;
+}
+
+div.display div.header {
+  display: flex;
+}
+
+div.display div.header .status {
+  flex-grow: 1;
+}
+
+div.display div.header button {
+  margin-left: 16px;
+}
