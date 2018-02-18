@@ -16,8 +16,6 @@ io.init();
 var app = express();
 app.use(bodyparser.json({type: ['text/*','json']}));
 
-//TODO:  Parse options from commandline
-
 app.get('/index.php/http_api/send_sms', function(req, res) {
   handle(sendSms, req.query, res, false);
 });
@@ -45,4 +43,6 @@ app.post('/index.php/jsonrpc/sms', function(req, res) {
   }
 });
 
-app.listen(8080);
+app.listen(config.port, function() {
+  console.log('SMSeagle mock API listening on '+config.port);
+});

@@ -23,7 +23,14 @@ exports.init = function() {
         message: incoming[3], // TODO unescape
         date: new Date(),
         oid: null
-      })
+      });
+      // Log
+      var str = 'RECV=';
+      str += new Date();
+      str += ' FROM:'+incoming[1];
+      str += ' TO:'+incoming[2];
+      str += ' MESSAGE:'+incoming[3];
+      console.log(str);
     } else {
       exports.error('Unknown command');
     }

@@ -10,6 +10,8 @@ exports.callbackmethod = 'POST';
 exports.apikey = '';
 exports.selfsigned = true;
 
+exports.port = 8080;
+
 /* --- Read config from file --- */
 var fs = require('fs');
 var ini = require('ini');
@@ -27,6 +29,7 @@ exports.read = function() {
       exports.callbackmethod = config.callbackmethod || exports.callbackmethod;
       exports.apikey = config.apikey || exports.apikey;
       exports.selfsigned = config.selfsigned || exports.selfsigned;
+      exports.port = config.port || exports.port;
     }
   } catch (e) {}
 }
