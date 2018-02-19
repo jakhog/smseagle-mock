@@ -35,7 +35,7 @@ exports.mocks = function(state, action) {
           smseagle1: action.mock.smseagle1 || '+123',
           smseagle2: action.mock.smseagle2 || '+321',
           callbackurl: action.mock.callbackurl || '',
-          callbackmethod: action.mock.frp_server || 'POST',
+          callbackmethod: action.mock.callbackmethod || 'POST',
           apikey: action.mock.apikey || '',
           selfsigned: action.mock.selfsigned || false,
           state: 'starting',

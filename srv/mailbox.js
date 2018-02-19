@@ -130,6 +130,12 @@ var callbackMsg = function(msg, callback) {
     path: path,
     method: config.callbackmethod == 'POST' ? 'POST' : 'GET'
   };
+  if (config.callbackmethod == 'POST') {
+    requestOpts.headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(query)
+    }
+  }
   var request;
   var responseCb = function(response) {
     callback(response.statusCode == 200);
