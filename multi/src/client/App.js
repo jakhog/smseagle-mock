@@ -13,7 +13,7 @@ class App extends Component {
   constructor() {
     super();
     // Connect to the server to get state
-    const ws = new WebSocket('ws://'+window.location.host);
+    const ws = new WebSocket((window.location.protocol == 'https:' ? 'wss://' : 'ws//')+window.location.host);
     ws.addEventListener('message', (event) => {
       const msg = JSON.parse(event.data);
       if (msg.initial_state) {
