@@ -111,7 +111,7 @@ var callbackMsg = function(msg, callback) {
     timestamp: datetime.format(msg.SendingDateTime, 'YYYYMMDDHHmmss', false),
     text: msg.TextDecoded,
     msgid: msg.ID,
-    modemno: msg.RecipientID,
+    modemno: msg.RecipientID == 'smseagle2' ? 2 : 1,
     oid: msg.oid
   };
   if (config.apikey) fwdMsg.apikey = config.apikey;
