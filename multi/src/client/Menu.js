@@ -14,29 +14,16 @@ class Menu extends Component {
   state = {
     open: false,
     fields: {
-      /*
       id: '',
       frp_server: '',
-      frp_port: '',
-      login: '',
-      pass: '',
-      smseagle1: '',
-      smseagle2: '',
-      callbackurl: '',
-      callbackmethod: 'POST',
-      apikey: '',
-      selfsigned: false,
-      */
-      id: '',
-      frp_server: 'smseagle.cbs.test',
       frp_port: '7001',
       login: 'admin',
       pass: 'password',
       smseagle1: '12345678',
       smseagle2: '87654321',
-      callbackurl: 'https://smseagle.cbs.test/sms/',
+      callbackurl: '',
       callbackmethod: 'POST',
-      apikey: 'apikeytest',
+      apikey: '',
       selfsigned: true,
     },
   };
